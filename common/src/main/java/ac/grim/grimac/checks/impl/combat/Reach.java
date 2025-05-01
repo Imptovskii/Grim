@@ -216,7 +216,7 @@ public class Reach extends Check implements PacketCheck {
 
         final double maxReach = player.compensatedEntities.self.getAttributeValue(Attributes.ENTITY_INTERACTION_RANGE);
         // +3 would be 3 + 3 = 6, which is the pre-1.20.5 behaviour, preventing "Missed Hitbox"
-        final double distance = maxReach + 3;
+        final double distance = maxReach + 5;
         final double[] possibleEyeHeights = player.getPossibleEyeHeights();
         final Vector3dm eyePos = new Vector3dm(from.getX(), 0, from.getZ());
         for (Vector3dm lookVec : possibleLookDirs) {
