@@ -4,7 +4,6 @@ import ac.grim.grimac.GrimAPI;
 import ac.grim.grimac.api.AbstractCheck;
 import ac.grim.grimac.api.GrimUser;
 import ac.grim.grimac.api.config.ConfigManager;
-import ac.grim.grimac.api.feature.FeatureManager;
 import ac.grim.grimac.api.handler.ResyncHandler;
 import ac.grim.grimac.checks.Check;
 import ac.grim.grimac.checks.impl.aim.processor.AimProcessor;
@@ -121,7 +120,7 @@ public class GrimPlayer implements GrimUser {
     public final ActionManager actionManager;
     public final PunishmentManager punishmentManager;
     public final MovementCheckRunner movementCheckRunner;
-    public final SyncedTags tagManager = new SyncedTags(this);
+    public final SyncedTags tagManager;
     // End manager like classes
     public Vector3dm clientVelocity = new Vector3dm();
     private PacketTracker viaPacketTracker;
@@ -245,11 +244,8 @@ public class GrimPlayer implements GrimUser {
     public final Queue<BlockBreak> queuedBreaks = new LinkedBlockingQueue<>();
     public final PlayerBlockHistory blockHistory = new PlayerBlockHistory();
     public final ArrayDeque<RotationData> pendingRotations = new ArrayDeque<>();
-    @Getter
-    @Setter
-    private ResyncHandler resyncHandler = new DefaultResyncHandler(this);
-    @Getter
-    private final FeatureManagerImpl featureManager = new FeatureManagerImpl(this);
+    @Getter @Setter private ResyncHandler resyncHandler = new DefaultResyncHandler(this);
+    @Getter private final FeatureManagerImpl featureManager = new FeatureManagerImpl(this);
     // start config
     private boolean debugPacketCancel = false;
     private int spamThreshold = 100;
@@ -276,13 +272,13 @@ public class GrimPlayer implements GrimUser {
     public GrimPlayer(@NonNull User user) {
         this.user = user;
         this.uuid = user.getUUID();
-
         fireworks = new CompensatedFireworks(this); // Must be before checkmanager
 
         lastInstanceManager = new LastInstanceManager(this);
         actionManager = new ActionManager(this);
         checkManager = new CheckManager(this);
         punishmentManager = new PunishmentManager(this);
+        this.tagManager = new SyncedTags(this); // must be after this.user = user
         movementCheckRunner = new MovementCheckRunner(this);
 
         compensatedWorld = new CompensatedWorld(this);
@@ -744,6 +740,7 @@ public class GrimPlayer implements GrimUser {
 
         final CompensatedInventory inventory = getInventory();
         // PacketEvents mappings are wrong
+        // TODO https://github.com/retrooper/packetevents/pull/1125
         return isGlider(inventory.getHelmet(), EquipmentSlot.CHEST_PLATE)
                 || isGlider(inventory.getChestplate(), EquipmentSlot.LEGGINGS)
                 || isGlider(inventory.getLeggings(), EquipmentSlot.BOOTS)
