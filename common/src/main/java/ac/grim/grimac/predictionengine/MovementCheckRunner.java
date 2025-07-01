@@ -8,6 +8,7 @@ import ac.grim.grimac.checks.type.PositionCheck;
 import ac.grim.grimac.manager.SetbackTeleportUtil;
 import ac.grim.grimac.player.GrimPlayer;
 import ac.grim.grimac.predictionengine.movementtick.MovementTickerCamel;
+import ac.grim.grimac.predictionengine.movementtick.MovementTickerHappyGhast;
 import ac.grim.grimac.predictionengine.movementtick.MovementTickerHorse;
 import ac.grim.grimac.predictionengine.movementtick.MovementTickerPig;
 import ac.grim.grimac.predictionengine.movementtick.MovementTickerPlayer;
@@ -20,18 +21,17 @@ import ac.grim.grimac.utils.collisions.datatypes.SimpleCollisionBox;
 import ac.grim.grimac.utils.data.VectorData;
 import ac.grim.grimac.utils.data.packetentity.PacketEntity;
 import ac.grim.grimac.utils.data.packetentity.PacketEntityCamel;
+import ac.grim.grimac.utils.data.packetentity.PacketEntityHappyGhast;
 import ac.grim.grimac.utils.data.packetentity.PacketEntityHorse;
 import ac.grim.grimac.utils.data.packetentity.PacketEntityRideable;
 import ac.grim.grimac.utils.data.packetentity.PacketEntityTrackXRot;
 import ac.grim.grimac.utils.enums.Pose;
-import ac.grim.grimac.utils.latency.CompensatedWorld;
 import ac.grim.grimac.utils.math.GrimMath;
 import ac.grim.grimac.utils.math.Vector3dm;
 import ac.grim.grimac.utils.math.VectorUtils;
 import ac.grim.grimac.utils.nmsutil.BoundingBoxSize;
 import ac.grim.grimac.utils.nmsutil.Collisions;
 import ac.grim.grimac.utils.nmsutil.GetBoundingBox;
-import ac.grim.grimac.utils.nmsutil.Materials;
 import ac.grim.grimac.utils.nmsutil.Riptide;
 import com.github.retrooper.packetevents.PacketEvents;
 import com.github.retrooper.packetevents.manager.server.ServerVersion;
@@ -343,7 +343,7 @@ public class MovementCheckRunner extends Check implements PositionCheck {
         boolean clientClaimsRiptide = player.packetStateData.tryingToRiptide;
         if (player.packetStateData.tryingToRiptide) {
             long currentTime = System.currentTimeMillis();
-            boolean isInWater = player.compensatedWorld.isRaining || Collisions.hasMaterial(player, player.boundingBox.copy().expand(0.1f), (block) -> Materials.isWater(CompensatedWorld.blockVersion, block.first()));
+            boolean isInWater = player.isInWaterOrRain();
 
             if (currentTime - player.packetStateData.lastRiptide < 450 || !isInWater) {
                 player.packetStateData.tryingToRiptide = false;
@@ -492,6 +492,9 @@ public class MovementCheckRunner extends Check implements PositionCheck {
             } else if (riding instanceof PacketEntityCamel) {
                 PlayerBaseTick.doBaseTick(player);
                 new MovementTickerCamel(player).livingEntityAIStep();
+            } else if (riding instanceof PacketEntityHappyGhast) {
+                PlayerBaseTick.doBaseTick(player);
+                new MovementTickerHappyGhast(player).livingEntityAIStep();
             } else if (riding instanceof PacketEntityHorse) {
                 PlayerBaseTick.doBaseTick(player);
                 new MovementTickerHorse(player).livingEntityAIStep();
