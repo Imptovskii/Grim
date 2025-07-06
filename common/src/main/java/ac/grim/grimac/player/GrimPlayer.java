@@ -26,7 +26,6 @@ import ac.grim.grimac.utils.anticheat.LogUtil;
 import ac.grim.grimac.utils.anticheat.MessageUtil;
 import ac.grim.grimac.utils.anticheat.update.BlockBreak;
 import ac.grim.grimac.utils.change.PlayerBlockHistory;
-import ac.grim.grimac.utils.chat.ChatUtil;
 import ac.grim.grimac.utils.collisions.datatypes.SimpleCollisionBox;
 import ac.grim.grimac.utils.data.*;
 import ac.grim.grimac.utils.data.packetentity.PacketEntity;
@@ -200,6 +199,7 @@ public class GrimPlayer implements GrimUser {
     public boolean slightlyTouchingWater = false;
     public boolean wasEyeInWater = false;
     public FluidTag fluidOnEyes;
+    public boolean softHorizontalCollision;
     public boolean horizontalCollision;
     public boolean verticalCollision;
     public boolean clientControlledVerticalCollision;
@@ -272,6 +272,7 @@ public class GrimPlayer implements GrimUser {
     public final List<Movement> finalMovementsThisTick = new ObjectArrayList<>();
     public final LongSet visitedBlocks = new LongOpenHashSet();
     private @Nullable UserConnection viaUserConnection;
+    public boolean wasLastPredictionCompleteChecked;
 
     public GrimPlayer(@NonNull User user) {
         this.user = user;
@@ -510,7 +511,7 @@ public class GrimPlayer implements GrimUser {
         } else {
             textReason = LegacyComponentSerializer.legacySection().serialize(reason);
         }
-        LogUtil.info("Disconnecting " + user.getProfile().getName() + " for " + ChatUtil.stripColor(textReason));
+        LogUtil.info("Disconnecting " + user.getProfile().getName() + " for " + MessageUtil.stripColor(textReason));
         try {
             user.sendPacket(new WrapperPlayServerDisconnect(reason));
         } catch (Exception ignored) { // There may (?) be an exception if the player is in the wrong state...
